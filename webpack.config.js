@@ -6,7 +6,7 @@ module.exports = {
   entry: './src/index.jsx',
   output: {
     filename: 'peripleo-IV.js',
-    path: path.resolve(__dirname, 'public'),
+    path: path.resolve(__dirname, 'docs'),
   },
   resolve: {
     extensions: ['.js', '.jsx'],
