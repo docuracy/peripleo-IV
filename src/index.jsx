@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { HashRouter, Routes, Route } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
 
@@ -12,7 +13,10 @@ import './index.scss';
 
 import 'react-image-lightbox/style.css';
 
-ReactDOM.render(
+const container = document.getElementById('app');
+const root = createRoot(container);
+
+root.render(
   <RecoilRoot>
     <StoreContextProvider>
       <FacetsContextProvider>
@@ -29,4 +33,4 @@ ReactDOM.render(
       </FacetsContextProvider>
     </StoreContextProvider>
   </RecoilRoot>
-, document.getElementById('app'));
+);

@@ -11,7 +11,7 @@ import ItemCard from './cards/ItemCard';
 import ItemListCard from './cards/ItemListCard';
 import MobilePreview from './MobilePreview';
 
-const SelectionPreview = props => {
+const SelectionPreview = React.forwardRef((props, ref) => {
 
   const elem = useRef();
 
@@ -28,7 +28,9 @@ const SelectionPreview = props => {
 
   const [ reset, setReset ] = useState(props.feature); 
 
-  const { coordinates } = node ? (node.geometry || feature.geometry) : feature.geometry;
+  const { coordinates } = node ? (
+		(props.proposing || node.geometry) || feature.geometry
+	) : feature.geometry;
 
   useEffect(() => {
     const cards = props.node ? 
@@ -38,7 +40,7 @@ const SelectionPreview = props => {
 
     setCards(cards);
     setReset(true);
-  }, [ props.feature ]);
+  }, [ props.feature, props.data, props.error, props.loading ]);
 
   useEffect(() => {
     // Bit of a hack...
@@ -105,6 +107,13 @@ const SelectionPreview = props => {
 
         <ItemCard 
           {...data}
+		  ref={ref}
+		  proposing={props.proposing}
+		  setProposing={props.setProposing}
+		  geoPlugin={props.geoPlugin}
+		  data={props.data}
+		  loading={props.loading}
+		  error={props.error}
           backButton={cards.length > 1}
           onClose={props.onClose}
           onGoTo={onGoTo} 
@@ -114,6 +123,6 @@ const SelectionPreview = props => {
     </Preview>
   )
 
-}
+});
 
 export default SelectionPreview;

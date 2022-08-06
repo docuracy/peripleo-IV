@@ -1,212 +1,360 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { BiLink } from 'react-icons/bi';
-import { IoArrowBackOutline, IoCloseSharp } from 'react-icons/io5';
-import { RiExternalLinkLine } from 'react-icons/ri';
-import { CgArrowsExpandRight } from 'react-icons/cg';
+import React, {useContext, useEffect, useRef, useState} from 'react';
+import {BiLink} from 'react-icons/bi';
+import {
+    IoArrowBackOutline,
+    IoCloseSharp,
+    IoPinSharp,
+    IoSaveSharp,
+} from 'react-icons/io5';
+import {RiExternalLinkLine} from 'react-icons/ri';
+import {CgArrowsExpandRight} from 'react-icons/cg';
 import * as sanitize from 'sanitize-html';
 
-import { SIGNATURE_COLOR } from '../../../Colors';
+import {SIGNATURE_COLOR} from '../../../Colors';
 
 import GoogleAnalytics from '../../../state/GoogleAnalytics';
 
-import { StoreContext } from '../../../store';
-import { parseWhen } from './When';
-import { getDescriptions } from '../../../store';
-import { getPreviewImage, getTypes } from './Utils';
+import {StoreContext} from '../../../store';
+import {parseWhen} from './When';
+import {getDescriptions} from '../../../store';
+import {getPreviewImage, getTypes} from './Utils';
 import useSearch from '../../../state/search/useSearch';
 
 import FullscreenImage from './FullscreenImage';
+import {Dot} from 'react-animated-dots';
+import {v4 as uuidv4} from 'uuid';
+
+import KVdb from '../../../KVdb';
 
 const highlight = (text, query) => {
-  if (!query)
-    return text;
+    if (!query) return text;
 
-  const parts = text.split(new RegExp(`(${query})`, 'gi'));
-  return parts.map((part, idx) => part.toLowerCase() === query.toLowerCase() ? `<mark>${part}</mark>` : part).join('');
-}
+    const parts = text.split(new RegExp(`(${query})`, 'gi'));
+    return parts
+        .map((part, idx) =>
+            part.toLowerCase() === query.toLowerCase()
+                ? `<mark>${part}</mark>`
+                : part
+        )
+        .join('');
+};
 
-const ItemCard = props => {
-  const el = useRef();
+const bucket = KVdb.bucket('hP6JC9XTVjQLGoBJR4mTf');
 
-  const { search } = useSearch();
+const ItemCard = React.forwardRef((props, ref) => {
+    const el = useRef();
 
-  const { store } = useContext(StoreContext);
+    const {search} = useSearch();
 
-  const [ showLightbox, setShowLightbox ] = useState(false);
+    const {store} = useContext(StoreContext);
 
-  const { node } = props;
+    const [showLightbox, setShowLightbox] = useState(false);
 
-  useEffect(() => {
-    if (el.current) {
-      el.current.querySelector('header button').blur();
+    const proposing = props.proposing;
+
+    const {node} = props;
+
+    useEffect(() => {
+        if (el.current) {
+            el.current.querySelector('header button').blur();
+        }
+    }, [el.current]);
+
+    const image = getPreviewImage(node);
+
+    const descriptions = getDescriptions(node);
+
+    const sourceUrl = node.properties?.url || node?.identifier || node.id;
+
+    const when = parseWhen(node.properties?.when || node.when);
+
+    const connectedNodes = store.getConnectedNodes(node.id);
+
+    const blockList = props.config.link_icons
+        ?.filter((p) => !p.img)
+        .map((p) => p.pattern);
+
+    const externalLinks = blockList
+        ? store.getExternalLinks(node.id).filter((l) => {
+              const id = l.identifier || l.id;
+              return !blockList.find((pattern) => id.includes(pattern));
+          })
+        : store.getExternalLinks(node.id);
+
+    // Related items includes external + internal links!
+    const connected = [...connectedNodes, ...externalLinks];
+
+    const goTo = () =>
+        props.onGoTo({
+            referrer: props,
+            nodeList: connected,
+        });
+
+    const tagNav = () => GoogleAnalytics.tagNavigation(sourceUrl);
+
+    // Temporary hack!
+    const color = SIGNATURE_COLOR[3];
+
+    function glyphs(glyphs) {
+        if (typeof glyphs == 'undefined') return '';
+        var output = [];
+        glyphs.forEach(function (glyph) {
+            if (!['market', 'direction'].includes(glyph))
+                output.push(
+                    <img src={'./glyphs/' + glyph + '.png'} title={glyph} />
+                );
+        });
+        return output.reduce(
+            (previousValue, currentValue) =>
+                previousValue === null ? (
+                    currentValue
+                ) : (
+                    <>
+                        {previousValue}
+                        {currentValue}
+                    </>
+                ),
+            null
+        );
     }
-  }, [ el.current ]);
+    function datespan(timespans) {
+        var years = [timespans[0].start.latest];
+        if (timespans[0].start.latest !== timespans[1].end.earliest)
+            years.push(timespans[1].end.earliest);
+        return years.sort().join('-');
+    }
+    function pageref() {
+        var refs = node.id.split('-').slice(1);
+        return (
+            'p.' +
+            parseInt(refs.shift(), 10) +
+            ' #' +
+            parseInt(refs.shift(), 10)
+        );
+    }
+    function placenames() {
+        if (proposing) {
+            return (
+                <>
+                    <span>{node.names[0].toponym} (1680)</span>
+                    <br />
+                    <span className="proposal">
+                        {props.loading && (
+                            <i>
+                                Fetching Wikidata<Dot>.</Dot>
+                                <Dot>.</Dot>
+                                <Dot>.</Dot>
+                            </i>
+                        )}
+                        {props.error && <i>No Wikidata settlement found.</i>}
+                        {props.data && (
+                            <a href={props.data.place.value} target="_blank">
+                                {props.data.placeLabel.value} (2022)
+                            </a>
+                        )}
+                    </span>
+                </>
+            );
+        } else
+            return node.names
+                .map((name, index) => (
+                    <span
+                        key={index}
+                        className={
+                            JSON.stringify(name.when.timespans).includes('2022')
+                                ? 'proposal'
+                                : ''
+                        }
+                    >
+                        {name.toponym} ({datespan(name.when.timespans)})
+                    </span>
+                ))
+                .reduce(
+                    (previousValue, currentValue) =>
+                        previousValue === null ? (
+                            currentValue
+                        ) : (
+                            <>
+                                {previousValue}
+                                <br />
+                                {currentValue}
+                            </>
+                        ),
+                    null
+                );
+    }
 
-  const image = getPreviewImage(node);
+    function propose() {
+        ref.current.classList.toggle('proposing');
+    }
 
-  const descriptions = getDescriptions(node);
+    const submitKVdb = async () => {
+        let notes = document.getElementById('explanation').value;
+        if (notes == '') {
+            alert('Please add a note explaining your proposal.');
+        } else {
+            let res = await bucket.set(
+                props.node.id + ':' + uuidv4(),
+                JSON.stringify({
+                    coordinates: props.proposing.coordinates,
+                    Wikidata: {
+                        label: props.data ? props.data.placeLabel.value : null,
+                        id: props.data
+                            ? props.data.place.value.split('/').pop()
+                            : null,
+                    },
+                    notes: notes,
+                    contributor: props.geoPlugin
+                        ? {
+                              ip: props.geoPlugin.geoplugin_request,
+                              location: {
+                                  city: props.geoPlugin.geoplugin_city,
+                                  country:
+                                      props.geoPlugin.geoplugin_countryName,
+                                  coordinates: [
+                                      +props.geoPlugin.geoplugin_longitude,
+                                      +props.geoPlugin.geoplugin_latitude,
+                                  ],
+                              },
+                          }
+                        : null,
+                })
+            );
 
-  const sourceUrl = 
-    node.properties?.url || node?.identifier || node.id;
-
-  const when = parseWhen(node.properties?.when || node.when);
-
-  const connectedNodes = store.getConnectedNodes(node.id);
-
-  const blockList = props.config.link_icons?.filter(p => !p.img).map(p => p.pattern);
-
-  const externalLinks = blockList ? 
-    store.getExternalLinks(node.id).filter(l => {
-      const id = l.identifier || l.id;
-      return !blockList.find(pattern => id.includes(pattern));
-    }) : store.getExternalLinks(node.id);
-
-  // Related items includes external + internal links!
-  const connected = [
-    ...connectedNodes,
-    ...externalLinks
-  ];
-
-  const goTo = () => props.onGoTo({
-    referrer: props,
-    nodeList: connected
-  });
-  
-  const tagNav = () => 
-    GoogleAnalytics.tagNavigation(sourceUrl);
-
-  // Temporary hack!
-  const color = SIGNATURE_COLOR[3]; 
-
-  return (
-    <div 
-      ref={el}
-      className="p6o-selection-card p6o-selection-itemcard">
-      <header 
-        aria-disabled
-        style={{ 
-          backgroundColor: color,
-          justifyContent: props.backButton ? 'space-between' : 'flex-end'
-        }}>
-        
-        {props.backButton && 
-          <button
-            aria-label="Go Back"
-            onClick={props.onGoBack}>
-            <IoArrowBackOutline />
-          </button>
-        }
-
-        <button
-          aria-label="Close"
-          onClick={props.onClose}>
-          <IoCloseSharp />
-        </button>
-      </header>
-      <div 
-        className="p6o-selection-content"
-        style={{ maxHeight: `${window.innerHeight - 46}px` }}>
-        {image &&
-          <div 
-            className="p6o-selection-header-image"
-            style={{ backgroundImage: `url("${image.src}")` }}>   
-
-            {image.accreditation &&
-              <span 
-                className="p6o-selection-header-image-accreditation">{image.accreditation}</span> 
+            if (res.ok) {
+                alert('Thank you, your suggestion has been logged.');
+                props.setProposing(false);
+            } else {
+                alert('Sorry, we had a problem logging your suggestion.');
+                console.log('KVdb storage problem.', res);
             }
-
-            <button 
-              className="p6o-selection-header-image-btn-full"
-              onClick={() => setShowLightbox(true) }>
-              <CgArrowsExpandRight />
-            </button>
-          </div> 
         }
 
-        <main
-          role="region" 
-          aria-live="polite">
-          
-          <div
-            className="p6o-selection-main-fixed">
+        // Retrieval: set Read Key in bucket initialisation
+//		let res = await bucket.list({prefix: 'IV:', values: true})
+//		console.log('results',resStore,res.map(entry => Object.assign({'id':entry[0].split(':')[1]}, JSON.parse(entry[1]))));
+    };
 
+    return (
+        <div ref={el} className="p6o-selection-card p6o-selection-itemcard">
+            <header
+                aria-disabled
+                style={{
+                    backgroundColor: color,
+                    justifyContent: props.backButton
+                        ? 'space-between'
+                        : 'flex-end',
+                }}
+            >
+                {props.backButton && (
+                    <button aria-label="Go Back" onClick={props.onGoBack}>
+                        <IoArrowBackOutline />
+                    </button>
+                )}
+
+                <span className="IVHeader">
+                    Index Villaris (1680) {pageref()}
+                </span>
+
+                <button aria-label="Close" onClick={props.onClose}>
+                    <IoCloseSharp />
+                </button>
+            </header>
             <div
-              className="p6o-source-link"
-              onClick={() => window.open(sourceUrl, '_blank')}>
-              <h1>
-                <a 
-                  href={sourceUrl} 
-                  target="_blank"
-                  onClick={tagNav}>
-                  {node.title}
-                </a>
-              </h1>
-
-              <h2>
-                <a 
-                  href={sourceUrl} 
-                  target="_blank"
-                  onClick={tagNav}>
-                  View page on {node.dataset}<RiExternalLinkLine />
-                </a>
-              </h2>
-              
-              <a 
-                href={sourceUrl}
-                className="p6o-new-tab-hint"
-                onClick={tagNav}
-                target="_blank">Link opens a new tab</a>
+                className="p6o-selection-content"
+                style={{maxHeight: `${window.innerHeight - 46}px`}}
+            >
+                <table className="IVEntry">
+                    <thead>
+                        <tr>
+                            <th>Symbols</th>
+                            <th>Place</th>
+                            <th>County</th>
+                            <th>Hundred &c.</th>
+                            <th>Latit.</th>
+                            <th>Longit.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{glyphs(node.properties.glyphs)}</td>
+                            <td>{decodeURIComponent(node.properties.title)}</td>
+                            <td>
+                                {decodeURIComponent(node.properties.county)}
+                            </td>
+                            <td>
+                                {decodeURIComponent(
+                                    node.properties.hundred.split(' (').shift()
+                                )}
+                            </td>
+                            <td>
+                                {
+                                    node.geometry.geometries.slice(-1)[0]
+                                        .coordinates[1]
+                                }
+                            </td>
+                            <td>
+                                {
+                                    node.geometry.geometries.slice(-1)[0]
+                                        .coordinates[0]
+                                }
+                            </td>
+                        </tr>
+                        <tr className={proposing ? 'proposal' : ''}>
+                            <td colSpan="4">
+                                <button
+                                    title="Suggest different location."
+                                    aria-label="Move"
+                                    onClick={propose}
+                                >
+                                    <IoPinSharp />
+                                </button>
+                                {placenames()}
+                            </td>
+                            <td>
+                                {proposing
+                                    ? proposing.coordinates[1].toFixed(4)
+                                    : node.geometry.geometries[0].coordinates[1].toFixed(
+                                          4
+                                      )}
+                            </td>
+                            <td>
+                                {proposing
+                                    ? proposing.coordinates[0].toFixed(4)
+                                    : node.geometry.geometries[0].coordinates[0].toFixed(
+                                          4
+                                      )}
+                            </td>
+                        </tr>
+                        {proposing && (props.data || props.error) && (
+                            <tr className="proposal submission">
+                                <td colSpan="6">
+                                    <textarea
+                                        id="explanation"
+                                        placeholder="Please write a note explaining your proposal, perhaps including relevant sources or URLs of web sites."
+                                    ></textarea>
+                                    <button
+                                        title="Submit suggestion."
+                                        aria-label="Submit"
+                                        onClick={submitKVdb}
+                                    >
+                                        <IoSaveSharp />
+                                    </button>
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
             </div>
 
-            <p className="p6o-node-types">
-              {getTypes(node).join(', ')}
-            </p>
-
-            {when && 
-              <p className="when">
-                <strong>Timespan:</strong> {when.label}
-              </p>
-            }
-          </div>
-
-          <div className="p6o-selection-main-flex">
-            {descriptions.map((d, idx) => 
-              <p key={idx} 
-                className="p6o-selection-description"
-                aria-level={3}
-                dangerouslySetInnerHTML={{
-                  __html: highlight(sanitize(d), search?.query)
-                }}>
-                {}
-              </p>
+            {showLightbox && (
+                <FullscreenImage
+                    image={image}
+                    onClose={() => setShowLightbox(false)}
+                />
             )}
-          </div>
-        </main>
-
-        <footer aria-live={true}>
-          {connected.length > 0 ?
-            <div
-              className="p6o-selection-related-records">
-              <button onClick={goTo} >
-                <BiLink /> <span>{connected.length} Related Web Resources</span>
-              </button>
-            </div> :
-
-            <div
-              className="p6o-selection-related-records disabled">
-              <BiLink /> <span>No Related Web Resources</span>
-            </div>
-          }
-        </footer>
-      </div>
-
-      {showLightbox && 
-        <FullscreenImage image={image} onClose={() => setShowLightbox(false)} />
-      }
-    </div>
-  )
-
-}
+        </div>
+    );
+});
 
 export default ItemCard;

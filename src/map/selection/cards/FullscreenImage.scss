@@ -12,3 +12,70 @@
   }
 
 }
+.p6o-selection-content table {
+	width:440px;
+	max-width:440px;
+    text-align: left;
+    border-collapse: collapse;
+    user-select: none;
+}
+.p6o-selection-content table td, .p6o-selection-content table th {
+	border: 1px solid #000;
+  	padding: 3px 2px;
+  	vertical-align: middle;
+    font-size:140%;
+  	font-family: 'IM Fell English SC', serif!important;
+}	
+.p6o-selection-content table tr td:nth-child(1) {
+	text-align: right;
+}		
+.p6o-selection-content table tbody tr:nth-child(2) {
+	background-color: #0095ff1f;
+}		
+.p6o-selection-content table tbody tr.submission {
+	background-color: #c6132738;
+}	
+.p6o-selection-content table tbody tr:nth-child(2) td {
+	font-size:80%;
+	font-family:Arial,Helvetica,sans-serif!important;
+  	vertical-align: top;
+  	line-height: 100%;
+}	
+.p6o-selection-content table img {
+	height: 26px;
+}	
+.cardstack,.card {
+	width: auto!important;
+}
+.IVHeader {
+	font-family: 'IM Fell English SC', serif!important;
+    font-size: 120%;
+    width: 100%;
+    color: white;
+    top: 2px;
+    position: relative;
+}
+.IVEntry button {
+	float: left;
+	border: 1px solid #000;
+    border-radius: 4px;
+    background-color: #0095ff40;
+    width: 30px;
+    height: 30px;
+    margin: 2px;
+}
+.p6o-map-container.proposing .IVEntry button:first-of-type {
+	color: red;
+    border-color: red;
+}
+.IVEntry .proposal td:not(:first-child), .IVEntry .proposal span.proposal a {
+	color: red;
+    font-weight: bold;
+}
+.IVEntry .submission button {
+	float: right;
+}
+.IVEntry .submission textarea {
+	width: 88%;
+	float: left;
+}

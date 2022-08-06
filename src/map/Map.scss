@@ -43,6 +43,10 @@
   cursor:pointer;
 }
 
+.p6o-map-container.proposing:not(.hover) canvas {
+  cursor:crosshair;
+}
+
 .p6o-map-container.loading {
   filter:blur(10px) grayscale(100%) contrast(0.8); // contrast(1.4);
 
