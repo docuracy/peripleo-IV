@@ -5,8 +5,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
   entry: './src/index.jsx',
   output: {
-    filename: 'peripleo-lanc.js',
-    path: path.resolve(__dirname, 'docs'),
+    filename: 'peripleo-IV.js',
+    path: path.resolve(__dirname, 'public'),
   },
   resolve: {
     extensions: ['.js', '.jsx'],
