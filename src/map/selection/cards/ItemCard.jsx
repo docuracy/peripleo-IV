@@ -204,6 +204,7 @@ const ItemCard = React.forwardRef((props, ref) => {
                             : null,
                     },
                     notes: notes,
+					altTitle: document.getElementById('newToponym').value,
                     contributor: props.ipapi
                         ? {
                               ip: props.ipapi.ip,
@@ -331,9 +332,10 @@ const ItemCard = React.forwardRef((props, ref) => {
                                 <td colSpan="6">
                                     <textarea
                                         id="explanation"
-                                        placeholder="Please write a note explaining your proposal, perhaps including relevant sources or URLs of web sites."
+                                        placeholder="Please write a note explaining your suggestion, perhaps including relevant sources or URLs of web sites."
                                     ></textarea>
-                                    <button
+                                    <input id="newToponym" placeholder="Alternative place-name (optional)."/>
+									<button
                                         title="Submit suggestion."
                                         aria-label="Submit"
                                         onClick={submitKVdb}
