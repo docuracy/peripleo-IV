@@ -64,18 +64,18 @@ const Map = React.forwardRef((props, ref) => {
 	const findLetterCode=e=>{switch(e.toUpperCase()){case"B":case"F":case"P":case"V":return"1";case"C":case"G":case"J":case"K":case"Q":case"S":case"X":case"Z":return"2";case"D":case"T":return"3";case"L":return"4";case"M":case"N":return"5";case"R":return"6";default:return null}};
 	const soundex=e=>{if(e){let t=findStartingCode(e),r=findLetterCode(t);for(let a=1;a<e.length;++a){const n=findLetterCode(e[a]);if(n&&n!=r&&4==(t+=n).length)break;r=n}for(let e=t.length;e<4;++e)t+="0";return t}return null};
 
-	// geoPlugin IP data
-	const [geoPlugin, setGeoPlugin] = useState(false);
-	if (!geoPlugin) fetch('http://www.geoplugin.net/json.gp')
+	// ipapi data
+	const [ipapi, setipapi] = useState(false);
+	if (!ipapi) fetch('https://ipapi.co/json/')
 	  .then((response) => {
 	    return response.json();
 	  })
 	  .then((actualData) => {
-		setGeoPlugin(actualData);
+		setipapi(actualData);
 	  })
 	  .catch((err) => {
-	    console.log('Error fetching geoPlugin IP data.',err);
-		setGeoPlugin(false);
+	    console.log('Error fetching ipapi data.',err);
+		setipapi(false);
 	  });
 
 	useEffect(() => {
@@ -308,7 +308,7 @@ const Map = React.forwardRef((props, ref) => {
 							config={props.config}
 							moveIntoView={moveIntoView}
 							onClose={onClosePopup}
-							geoPlugin={geoPlugin}
+							ipapi={ipapi}
 						/>
 					)}
 				</AnimatePresence>

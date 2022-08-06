@@ -110,7 +110,7 @@ const SelectionPreview = React.forwardRef((props, ref) => {
 		  ref={ref}
 		  proposing={props.proposing}
 		  setProposing={props.setProposing}
-		  geoPlugin={props.geoPlugin}
+		  ipapi={props.ipapi}
 		  data={props.data}
 		  loading={props.loading}
 		  error={props.error}

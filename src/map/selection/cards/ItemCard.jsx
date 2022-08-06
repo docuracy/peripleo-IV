@@ -204,16 +204,16 @@ const ItemCard = React.forwardRef((props, ref) => {
                             : null,
                     },
                     notes: notes,
-                    contributor: props.geoPlugin
+                    contributor: props.ipapi
                         ? {
-                              ip: props.geoPlugin.geoplugin_request,
+                              ip: props.ipapi.ip,
                               location: {
-                                  city: props.geoPlugin.geoplugin_city,
+                                  city: props.ipapi.city,
                                   country:
-                                      props.geoPlugin.geoplugin_countryName,
+                                      props.ipapi.country_name,
                                   coordinates: [
-                                      +props.geoPlugin.geoplugin_longitude,
-                                      +props.geoPlugin.geoplugin_latitude,
+                                      +props.ipapi.longitude,
+                                      +props.ipapi.latitude,
                                   ],
                               },
                           }
