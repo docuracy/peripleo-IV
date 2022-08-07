@@ -25,6 +25,13 @@ const featureToNode = (feature, name) => {
   // For convenience when mapping
   node.properties.id = id;
   node.properties.dataset = name;
+  
+  // Handle LP geometry.geometries and inadequate facet filtering
+	var geometries = [...node.geometry.geometries];
+	node.geometry = {...node.geometry.geometries[0]};
+	node.geometry.geometries = [...geometries];
+	node.properties.county = decodeURIComponent(node.relations[0].relationTo.split(':').pop());
+	node.properties.hundred = decodeURIComponent(node.relations[1].relationTo.split(':').pop().replace('_',' (')+')');
         
   return node;
 }
@@ -39,6 +46,9 @@ export const loadLinkedPlaces = (name, url, store) =>
   fetch(url)    
     .then(response => response.json())
     .then(data => {
+    	
+      if (location.hostname === "localhost" || location.hostname === "127.0.0.1") data.features.splice(1000);
+    	
       console.log(`Importing LP: ${name} (${data.features.length} features)`);
 
       store.graph.beginUpdate();

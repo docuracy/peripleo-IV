@@ -281,12 +281,10 @@ const ItemCard = React.forwardRef((props, ref) => {
                             <td>{glyphs(node.properties.glyphs)}</td>
                             <td>{decodeURIComponent(node.properties.title)}</td>
                             <td>
-                                {decodeURIComponent(node.properties.county)}
+                                {node.properties.county}
                             </td>
                             <td>
-                                {decodeURIComponent(
-                                    node.properties.hundred.split(' (').shift()
-                                )}
+                                {node.properties.hundred.split(' (').shift()}
                             </td>
                             <td>
                                 {
