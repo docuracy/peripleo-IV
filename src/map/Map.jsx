@@ -24,6 +24,10 @@ import MyLocation from './MyLocation';
 
 import Hoop from './styles/Hoop';
 
+import KVdb from '../KVdb';
+
+const bucket = KVdb.bucket('EWuFG2nmhkN78fQoKHUKCp','7syYw4k7C6VDV6f');
+
 const Map = React.forwardRef((props, ref) => {
 	
 	const {config} = props;
@@ -49,6 +53,38 @@ const Map = React.forwardRef((props, ref) => {
 	const [lastSelection, setLastSelection] = useState();
 
 	const [proposing, setProposing] = useState(false);
+
+    const [nodeKVdb, setNodeKVdb] = useState(false);
+
+	const KVdbMarkers = () => {
+		if (nodeKVdb) {
+			const proposals = [];
+			nodeKVdb.forEach((proposal,i) => {
+				proposal = JSON.parse(proposal[1]);
+				proposals.push(
+					<Marker
+				      key={i}
+					  longitude={proposal.coordinates[0]}
+				      latitude={proposal.coordinates[1]}>
+				      <div className="KVdbMarker">
+				        <span><b>{i + 1}</b></span>
+				      </div>
+				    </Marker>
+				)
+			})
+			return (
+				<>{proposals}</>
+			)
+		}
+	};
+
+	const fetchKVdb = async () => {
+		console.log('fetchKVdb',selectedId);
+		if(typeof selectedId === 'string' && selectedId.startsWith('IV:IV1680-')){
+			let res = await bucket.list({prefix: selectedId, values: true});
+			setNodeKVdb(res);
+		}
+    };
 
 	const customAttribution = config.data.reduce(
 		(attr, dataset) =>
@@ -105,7 +141,12 @@ const Map = React.forwardRef((props, ref) => {
 		} else if (!selectedId && selection) {
 			setSelection(null);
 		}
+		
 	}, [selectedId, search]);
+	
+	useEffect(() => {
+		fetchKVdb();
+	}, [selectedId]);
 
 	useEffect(() => {
 		// Map container gets hover element,
@@ -167,6 +208,7 @@ const Map = React.forwardRef((props, ref) => {
 			setSelectedId(node.id);
 			setLastSelection({node, feature});
 			setProposing(false);
+			setNodeKVdb(false);
 		} 
 		else if (ref.current.classList.contains('proposing')) {
 			setProposing(clickPoint.lngLat);
@@ -201,6 +243,7 @@ const Map = React.forwardRef((props, ref) => {
 		else {
 			setSelection(null);
 			setProposing(false);
+			setNodeKVdb(false);
 
 			// Sync state up
 			setSelectedId(null);
@@ -219,6 +262,7 @@ const Map = React.forwardRef((props, ref) => {
 		setSelectedId(null);
 		ref.current.classList.remove('proposing');
 		setProposing(false);
+		setNodeKVdb(false);
 	};
 
 	const moveIntoView = (coord, bounds) => {
@@ -302,6 +346,9 @@ const Map = React.forwardRef((props, ref) => {
 							ref={ref}
 							proposing={proposing ? {'coordinates':[+proposing.lng,+proposing.lat]} : false}
 							setProposing={setProposing}
+							nodeKVdb={nodeKVdb}
+		  					fetchKVdb={fetchKVdb}
+							bucket={bucket}
 							data={data}
 							loading={loading}
 							error={error}
@@ -318,6 +365,10 @@ const Map = React.forwardRef((props, ref) => {
 						compact
 						customAttribution={customAttribution}
 					/>
+				)}
+				
+				{nodeKVdb && (
+					KVdbMarkers()
 				)}
 				
 				{proposing && (

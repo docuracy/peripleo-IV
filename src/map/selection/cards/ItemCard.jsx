@@ -24,8 +24,6 @@ import FullscreenImage from './FullscreenImage';
 import {Dot} from 'react-animated-dots';
 import {v4 as uuidv4} from 'uuid';
 
-import KVdb from '../../../KVdb';
-
 const highlight = (text, query) => {
     if (!query) return text;
 
@@ -38,8 +36,6 @@ const highlight = (text, query) => {
         )
         .join('');
 };
-
-const bucket = KVdb.bucket('hP6JC9XTVjQLGoBJR4mTf');
 
 const ItemCard = React.forwardRef((props, ref) => {
     const el = useRef();
@@ -183,6 +179,49 @@ const ItemCard = React.forwardRef((props, ref) => {
                     null
                 );
     }
+	function proposals() {
+		if (props.nodeKVdb) {
+			const proposals = [];
+			props.nodeKVdb.forEach((proposal,i) => {
+				proposal = JSON.parse(proposal[1]);
+				var labels = [];
+				if (proposal.altTitle !== '') labels.push(<span title="Contributor's suggestion.">{proposal.altTitle}</span>);
+				if (proposal.Wikidata.label !== null) labels.push(<i title="Wikidata location-based match.">{proposal.Wikidata.label}</i>);
+				labels = labels.reduce(
+                    (previousValue, currentValue) =>
+                        previousValue === null ? (
+                            currentValue
+                        ) : (
+                            <>
+                                {previousValue}
+                                <br />
+                                {currentValue}
+                            </>
+                        ),
+                    null
+                );
+				proposals.push(
+					<tr className="proposals" key={i} title={proposal.notes+' [Contributor in '+proposal.contributor.location.city+' ('+proposal.contributor.location.country+')]'}>
+	                    <td>
+	                        {i+1}
+	                    </td>
+	                    <td colSpan="3">
+	                        {labels}
+	                    </td>
+	                    <td>
+	                        {proposal.coordinates[1].toFixed(4)}
+	                    </td>
+	                    <td>
+	                        {proposal.coordinates[0].toFixed(4)}
+	                    </td>
+	                </tr>
+				)
+			})
+			return (
+				<>{proposals}</>
+			)
+		}
+	}
 
     function propose() {
         ref.current.classList.toggle('proposing');
@@ -193,8 +232,9 @@ const ItemCard = React.forwardRef((props, ref) => {
         if (notes == '') {
             alert('Please add a note explaining your proposal.');
         } else {
-            let res = await bucket.set(
-                props.node.id + ':' + uuidv4(),
+			let counter = props.nodeKVdb ? props.nodeKVdb.length.toString().padStart(5, '0') : '00000';
+            let res = await props.bucket.set(
+                props.node.id + ':' + counter + '-' + uuidv4(),
                 JSON.stringify({
                     coordinates: props.proposing.coordinates,
                     Wikidata: {
@@ -223,6 +263,7 @@ const ItemCard = React.forwardRef((props, ref) => {
             );
 
             if (res.ok) {
+				props.fetchKVdb();
                 alert('Thank you, your suggestion has been logged.');
                 props.setProposing(false);
             } else {
@@ -230,10 +271,6 @@ const ItemCard = React.forwardRef((props, ref) => {
                 console.log('KVdb storage problem.', res);
             }
         }
-
-        // Retrieval: set Read Key in bucket initialisation
-//		let res = await bucket.list({prefix: 'IV:', values: true})
-//		console.log('results',resStore,res.map(entry => Object.assign({'id':entry[0].split(':')[1]}, JSON.parse(entry[1]))));
     };
 
     return (
@@ -325,6 +362,7 @@ const ItemCard = React.forwardRef((props, ref) => {
                                       )}
                             </td>
                         </tr>
+                        {proposals()}
                         {proposing && (props.data || props.error) && (
                             <tr className="proposal submission">
                                 <td colSpan="6">

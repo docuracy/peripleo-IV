@@ -35,7 +35,10 @@
 .p6o-selection-content table tbody tr.submission {
 	background-color: #c6132738;
 }	
-.p6o-selection-content table tbody tr:nth-child(2) td {
+.IVEntry tr.proposals {
+	background-color: rgb(198 19 39 / 8%);
+}
+.p6o-selection-content table tbody tr:nth-child(2) td, .IVEntry tr.proposals td {
 	font-size:80%;
 	font-family:Arial,Helvetica,sans-serif!important;
   	vertical-align: top;
@@ -82,4 +85,19 @@
 }
 .IVEntry .submission input {
 	width: 60%;
+}
+.KVdbMarker {
+	font-size: 1em;
+    color: #f8f8f8;
+    background-color: #ff0000a3;
+    width: 1em;
+    height: 1em;
+    text-align: center;
+    vertical-align: middle;
+    border-radius: 1em;
+    border: 2px solid black;
+}
+.KVdbMarker span {
+	top: -0.3em;
+    position: relative;
 }

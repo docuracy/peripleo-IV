@@ -40,7 +40,7 @@ const SelectionPreview = React.forwardRef((props, ref) => {
 
     setCards(cards);
     setReset(true);
-  }, [ props.feature, props.data, props.error, props.loading ]);
+  }, [ props.feature, props.data, props.error, props.loading, props.nodeKVdb ]);
 
   useEffect(() => {
     // Bit of a hack...
@@ -110,6 +110,9 @@ const SelectionPreview = React.forwardRef((props, ref) => {
 		  ref={ref}
 		  proposing={props.proposing}
 		  setProposing={props.setProposing}
+		  nodeKVdb={props.nodeKVdb}
+		  fetchKVdb={props.fetchKVdb}
+		  bucket={props.bucket}
 		  ipapi={props.ipapi}
 		  data={props.data}
 		  loading={props.loading}
