@@ -33,14 +33,13 @@
     {
       "name": "Index Villaris, 1680", 
       "format": "LINKED_PLACES", 
-      "src": "./data/IV-GB1900-OSM-WD-Peripleo-uncertain.lp.json",
+      "src": "./data/IV-GB1900-OSM-WD-uncertain.lp.json",
       "attribution":"<a href=\"https://viaeregiae.org/wiki/Index_Villaris\" target=\"_blank\">Index Villaris, 1680</a> © Stephen Gadd & Alexis Litvine"
     }
   ],
   "facets":[
-	  { "name": "glyphs", "path": ["properties", "glyphs"] },
-	  { "name": "certainty", "path": ["geometry", "certainty"] },
 	  { "name": "county", "path": ["properties", "county"] },
-	  { "name": "hundred", "path": ["properties", "hundred"] }
+	  { "name": "hundred", "path": ["properties", "hundred"] },
+	  { "name": "glyphs", "path": ["properties", "glyphs"] }
   ]
 }
