@@ -28,7 +28,7 @@ function loadCounty(county){
 			var coordinates = feature.geometry.geometries.pop().coordinates;
 			$('#fulltable tbody').append('<tr id="'+id+'" class="'+feature.geometry.certainty+'">'
 				+'<td>'+glyphs+'</td>'
-				+(feature.geometry.certainty=='certain'?'<td>'+feature.properties.title+'</td>':'<td><a href="../index.html/#/10/'+coordinates[0]+'/'+coordinates[1]+'/mode=points+selected=IV%3A'+id+'">'+feature.properties.title+'</a>'+kvdb+'</td>')
+				+(feature.geometry.certainty=='certain'?'<td>'+feature.properties.title+'</td>':'<td><a href="../#/10/'+coordinates[0]+'/'+coordinates[1]+'/mode=points+selected=IV%3A'+id+'">'+feature.properties.title+'</a>'+kvdb+'</td>')
 				+'<td>'+decodeURI(feature.properties.hundred.split(' (')[0])+'</td>'
 				+'<td>'+county+'</td>'
 				+'<td>'+coordinates[1]+'</td>'
