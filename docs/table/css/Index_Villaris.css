@@ -21,6 +21,11 @@ label[for=uncertain] {
 	left: -0.4em;
     position: relative;
 }
+#instructions {
+	font-family: monospace;
+    margin-bottom: 1em;
+    width: 57em;
+}
 #fulltable {
 	display: none;
 	background-color: #f6f6f6;
