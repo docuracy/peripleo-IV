@@ -115,8 +115,8 @@ const ItemCard = React.forwardRef((props, ref) => {
     }
     function datespan(timespans) {
         var years = [timespans[0].start.latest];
-        if (timespans[0].start.latest !== timespans[1].end.earliest)
-            years.push(timespans[1].end.earliest);
+        if (timespans[0].start.latest !== timespans[0].end.earliest)
+            years.push(timespans[0].end.earliest);
         return years.sort().join('-');
     }
     function pageref() {
