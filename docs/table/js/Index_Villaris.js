@@ -27,10 +27,9 @@ function loadCounty(county){
 			else kvdb = '';
 			var coordinates = feature.geometry.geometries[feature.geometry.geometries.length - 1].coordinates;
 			var certainty = feature.geometry.geometries[0].certainty;
-			console.log(certainty);
 			$('#fulltable tbody').append('<tr id="'+id+'" class="'+certainty+'">'
 				+'<td>'+glyphs+'</td>'
-				+(certainty=='certain'?'<td>'+feature.properties.title+'</td>':'<td><a href="https://docuracy.github.io/peripleo-IV/#/10/'+coordinates[0]+'/'+coordinates[1]+'/mode=points+selected=IV%3A'+id+'">'+feature.properties.title+'</a>'+kvdb+'</td>')
+				+(certainty=='certain'?'<td>'+feature.properties.title+'</td>':'<td><a href="../#/10/'+coordinates[0]+'/'+coordinates[1]+'/mode=points+facet=suggestions+filters=certainty[(uncertain),(less-certain)],county[('+county+')]+selected=IV%3A'+id+'">'+feature.properties.title+'</a>'+kvdb+'</td>')
 				+'<td>'+decodeURI(feature.properties.hundred.split(' (')[0])+'</td>'
 				+'<td>'+county+'</td>'
 				+'<td>'+coordinates[1]+'</td>'
