@@ -37,6 +37,7 @@
       "attribution":"<a href=\"https://viaeregiae.org/wiki/Index_Villaris\" target=\"_blank\">Index Villaris, 1680</a> © Stephen Gadd & Alexis Litvine"
     }
   ],
+  "welcome_message":"welcome.md",
   "facets":[
 	  { "name": "glyphs", "path": ["properties", "glyphs"] },
 	  { "name": "county", "path": ["properties", "county"] },
