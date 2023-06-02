@@ -117,7 +117,7 @@ export const loadLinkedPlaces = (name, url, store) =>
 	
 	      store.graph.endUpdate();
     	
-	      if (location.pathname === '/peripleo-IV/' || location.hostname === 'localhost' ) {
+	      if (location.pathname.includes('peripleo-IV') || location.hostname === 'localhost' ) {
 			  console.log('Indexing disabled on peripleo-IV and localhost.');
 		  }
 		  else{
