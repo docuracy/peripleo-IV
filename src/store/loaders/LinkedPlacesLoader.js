@@ -116,8 +116,10 @@ export const loadLinkedPlaces = (name, url, store) =>
 	        }, 0);
 	
 	      store.graph.endUpdate();
+	      
+	      console.log(location.hostname, location.pathname);
     	
-	      if (window.location.pathname.split("/")[0] === 'peripleo-IV' || location.hostname === 'localhost' ) {
+	      if (location.pathname.split("/")[0] === 'peripleo-IV' || location.hostname === 'localhost' ) {
 			  console.log('Indexing disabled on peripleo-IV and localhost.');
 		  }
 		  else{
