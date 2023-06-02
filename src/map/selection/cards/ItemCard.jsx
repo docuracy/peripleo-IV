@@ -264,8 +264,9 @@ const ItemCard = React.forwardRef((props, ref) => {
 
             if (res.ok) {
 				props.fetchKVdb();
-                alert('Thank you, your suggestion has been logged.');
+                alert('Thank you, your suggestion has been logged.\n\nThis page will be reloaded to refresh the markers.');
                 props.setProposing(false);
+                window.location.reload();
             } else {
                 alert('Sorry, we had a problem logging your suggestion.');
                 console.log('KVdb storage problem.', res);

@@ -47,95 +47,102 @@ export const loadLinkedPlaces = (name, url, store) =>
     .then(response => response.json())
     .then(data => {
     	
-      if (location.hostname === "localhost" || location.hostname === "127.0.0.1") data.features.splice(1000);
-    	
+      /*
+      if (window.location.pathname.split("/")[0] === 'peripleo-IV' || location.hostname === 'localhost' ) {
+			// Filter the features based on certainty
+        	data.features = data.features.filter(feature => {
+				const certainty = feature.geometry.geometries[0]?.certainty;
+				return certainty !== 'certain';
+			});
+	  }
+      */
+	 
       console.log(`Importing LP: ${name} (${data.features.length} features)`);
-
-      store.graph.beginUpdate();
-
-      // Add nodes to graph and spatial tree
-      const nodes = data.features.map(feature => {
-        // This feature, as a node
-        const node = featureToNode(feature, name);
-        
-        store.graph.addNode(node.id, node);
-
-        const bounds = getBounds(node);
-        if (bounds)
-            store.spatialIndex.insert({ ...bounds, node });  
-
-        return node;
-      });
-
-      // Special case for LPx: embedded nodes
-      const embeddedNodes = nodes
-        .filter(node => node.links?.length > 0)
-        .reduce((all, node ) => {
-          const embedded = getEmbeddedLinkedNodes(node, name);   
-          
-          embedded.forEach(node => {
-            store.graph.addNode(node.id, node);
-
-            const bounds = getBounds(node);
-            if (bounds)
-              store.spatialIndex.insert({ ...bounds, node });  
-          });
-
-          return [...all, ...embedded];
-        }, []);
-    
-      // Add edges to graph
-      const edgeCount = nodes
-        .filter(node => node.links?.length > 0)
-        .reduce((totalCount, node) => { 
-          return totalCount + node.links.reduce((countPerNode, link) => {
-            try {
-              const identifier = link.identifier || link.id; // required
-
-              if (identifier) {
-                // In LinkedPlaces, links have the shape
-                // { type, id }
-                const sourceId = node.id;
-                const targetId = normalizeURI(link.id || link.identifier);
-
-                // Normalize in place
-                link.id = targetId;
-
-                // Note that this will create 'empty nodes' for targets not yet in
-                store.graph.addLink(sourceId, targetId, link);
-
-                return countPerNode + 1;
-              } else {
-                console.warn('Link does not declare identifier', link, 'on node', node);
-                return countPerNode;
-              }
-            } catch {
-              console.error('Unable to parse link', link, 'on node', node);
-              return countPerNode;
-            }
-          }, 0)
-        }, 0);
-
-      store.graph.endUpdate();
-
-      // Add to search index
-      console.log('Indexing...');
-      console.time('Took');
-      store.index([...nodes, ...embeddedNodes ]);
-      console.timeEnd('Took');
-
-      return { 
-        // Dataset name,
-        name,
-
-        // Dataset node count
-        nodes: nodes.length + embeddedNodes.length, 
-
-        // Dataset edge count
-        edges: edgeCount,
-
-        // Dataset structured metadata, if any
-        metadata: data.indexing
-      };
-    });
+      
+      const timestamp = new Date().getTime();
+	  const kvdbUrl = 'https://kvdb.io/EWuFG2nmhkN78fQoKHUKCp/?values=true&format=json&timestamp=' + timestamp; // Timestamp forces refresh
+	  return fetch(kvdbUrl)
+        .then(response => response.json())
+        .then(jsonData => {
+      	  const identifiers = jsonData.map(subarray => subarray[0].split(':').slice(0, 2).join(':'));
+      	  
+	      store.graph.beginUpdate();
+	
+	      // Add nodes to graph and spatial tree
+	      const nodes = data.features.map(feature => {
+	        // This feature, as a node
+	        const node = featureToNode(feature, name);
+	        node.suggestions = identifiers.filter(id => id === feature['@id']).length.toString();
+	        
+	        store.graph.addNode(node.id, node);
+	
+	        const bounds = getBounds(node);
+	        if (bounds)
+	            store.spatialIndex.insert({ ...bounds, node });  
+	
+	        return node;
+	      });
+	    
+	      // Add edges to graph
+	      const edgeCount = nodes
+	        .filter(node => node.links?.length > 0)
+	        .reduce((totalCount, node) => { 
+	          return totalCount + node.links.reduce((countPerNode, link) => {
+	            try {
+	              const identifier = link.identifier || link.id; // required
+	
+	              if (identifier) {
+	                // In LinkedPlaces, links have the shape
+	                // { type, id }
+	                const sourceId = node.id;
+	                const targetId = normalizeURI(link.id || link.identifier);
+	
+	                // Normalize in place
+	                link.id = targetId;
+	
+	                // Note that this will create 'empty nodes' for targets not yet in
+	                store.graph.addLink(sourceId, targetId, link);
+	
+	                return countPerNode + 1;
+	              } else {
+	                console.warn('Link does not declare identifier', link, 'on node', node);
+	                return countPerNode;
+	              }
+	            } catch {
+	              console.error('Unable to parse link', link, 'on node', node);
+	              return countPerNode;
+	            }
+	          }, 0)
+	        }, 0);
+	
+	      store.graph.endUpdate();
+    	
+	      if (window.location.pathname.split("/")[0] === 'peripleo-IV' || location.hostname === 'localhost' ) {
+			  console.log('Indexing disabled on peripleo-IV and localhost.');
+		  }
+		  else{
+	
+		      // Add to search index
+		      console.log('Indexing...');
+		      console.time('Took');
+		      store.index([...nodes]);
+		      console.timeEnd('Took');
+				  
+		  }
+	
+	      return { 
+	        // Dataset name,
+	        name,
+	
+	        // Dataset node count
+	        nodes: nodes.length, 
+	
+	        // Dataset edge count
+	        edges: edgeCount,
+	
+	        // Dataset structured metadata, if any
+	        metadata: data.indexing
+	      };
+	    });
+	});
 
