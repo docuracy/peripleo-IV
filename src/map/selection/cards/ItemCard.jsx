@@ -369,7 +369,7 @@ const ItemCard = React.forwardRef((props, ref) => {
                                 <td colSpan="6">
                                     <textarea
                                         id="explanation"
-                                        placeholder="Please write a note explaining your suggestion, perhaps including relevant sources or URLs of web sites."
+                                        placeholder="Please write a note explaining your suggestion, perhaps including relevant sources, URLs of web sites, and (optionally) your name."
                                     ></textarea>
                                     <input id="newToponym" placeholder="Alternative place-name (optional)."/>
 									<button
